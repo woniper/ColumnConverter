@@ -1,13 +1,5 @@
 package com.woniper.converter.config;
 
-import java.util.EnumSet;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
@@ -16,6 +8,9 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.DispatcherServlet;
+
+import javax.servlet.*;
+import java.util.EnumSet;
 
 @Configuration
 public class WebAppInitializer implements WebApplicationInitializer {
@@ -26,7 +21,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
 
 		FilterRegistration.Dynamic characterEncoding = servletContext.addFilter("characterEncoding", characterEncodingFilter());
 		EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD);
-		characterEncoding.addMappingForUrlPatterns(dispatcherTypes, true, "/");
+		characterEncoding.addMappingForUrlPatterns(dispatcherTypes, true, "/*");
 		
 		setHiddenHttpMethodFilter(servletContext);
 	}
