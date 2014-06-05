@@ -29,10 +29,7 @@ public class ConvertController {
     public @ResponseBody List connect(@RequestBody DBConfigDto dto) {
         DataSource dataSource = service.createDataSource(dto.getUrl(), dto.getUsername(), dto.getPassword());
         List list = testDao.getList("show databases", dataSource);
-        Map map = new HashMap<>();
-        map.put("list", list);
         return list;
-
     }
 
     @RequestMapping(value = "/tables/{name}", method = RequestMethod.POST, produces = {MediaType.APPLICATION_JSON_VALUE})
