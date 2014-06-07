@@ -1,5 +1,6 @@
 package com.woniper.converter.config;
 
+import com.woniper.converter.convert.FieldTextConvert;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -31,5 +32,10 @@ public class WebAppConfiguration extends WebMvcConfigurerAdapter {
     	resolver.setSuffix(".jsp");
     	return resolver;
     }
-	
+
+    @Bean
+    public FieldTextConvert fieldTextConvert() {
+        return new FieldTextConvert();
+    }
+
 }

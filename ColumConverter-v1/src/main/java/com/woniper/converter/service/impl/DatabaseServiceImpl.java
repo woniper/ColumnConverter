@@ -1,5 +1,6 @@
 package com.woniper.converter.service.impl;
 
+import com.woniper.converter.dto.DatabaseDto;
 import com.woniper.converter.service.DatabaseService;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,12 @@ import javax.sql.DataSource;
 public class DatabaseServiceImpl implements DatabaseService {
 
     @Override
-    public DataSource createDataSource(String url, String username, String password) {
+    public DataSource createDataSource(DatabaseDto dto) {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl(url);
-        dataSource.setUsername(username);
-        dataSource.setPassword(password);
+        dataSource.setUrl(dto.getUrl());
+        dataSource.setUsername(dto.getUsername());
+        dataSource.setPassword(dto.getPassword());
         return dataSource;
     }
 }

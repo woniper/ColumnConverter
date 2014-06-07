@@ -1,5 +1,7 @@
 package com.woniper.converter.service;
 
+import com.woniper.converter.dto.DatabaseDto;
+
 import javax.sql.DataSource;
 
 /**
@@ -7,5 +9,5 @@ import javax.sql.DataSource;
  */
 public interface DatabaseService {
 
-    DataSource createDataSource(String url, String username, String password);
+    DataSource createDataSource(DatabaseDto dto);
 }

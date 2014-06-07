@@ -4,7 +4,7 @@ import org.pojomatic.Pojomatic;
 import org.pojomatic.annotations.AutoProperty;
 
 @AutoProperty
-public class DBConfigDto {
+public class DatabaseDto {
 
 	private int dbKind;
 	private String url;

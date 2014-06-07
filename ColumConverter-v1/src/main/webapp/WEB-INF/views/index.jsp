@@ -1,5 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ page session="false" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <% String cp = request.getContextPath(); %>
 <html>
 <head>
@@ -13,20 +13,20 @@
 
     <script src="http://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
     <script src="<%=cp%>/resources/bootstrap/js/bootstrap.min.js"></script>
-    
-    <script>
-        var name = "";
-        var database = "";
-        var table = "";
-        function dbConnection() {
-//		    var dbKind = document.getElementById("dbKind").value;
-            var url = document.getElementById("url").value;
-            var username = document.getElementById("username").value;
-            var password = document.getElementById("password").value;
-            var data = { "url":url, "username":username, "password":password };
+    <script src="<%=cp%>/resources/utils/commons.js"></script>
+
+    <script type="text/javascript">
+        function getConnectInfomation() {
+            return data = { "url":document.getElementById("url").value,
+                            "username":document.getElementById("username").value,
+                            "password":document.getElementById("password").value
+                          }
+        }
+        function getDatabases() {
+            var data = getConnectInfomation();
 
 	        $.ajax({
-	        	   url:"<%=cp%>/connect",
+	        	   url:"<%=cp%>/databases",
 	        	   method:"POST",
 	        	   type:"json",
 	        	   contentType:"application/json",
@@ -56,10 +56,7 @@
             });
 	    }
         function getTables(dbName) {
-            var url = document.getElementById("hiddenUrl").value;
-            var username = document.getElementById("hiddenUserName").value;
-            var password = document.getElementById("hiddenPassword").value;
-            var data = { "url":url, "username":username, "password":password };
+            var data = getConnectInfomation();
 
             $.ajax({
                 url:"<%=cp%>/tables/"+dbName,
@@ -76,110 +73,66 @@
                     var listTag = "";
                     for(var i = 0; i < count; i++) {
                         var tbName = data[i].name;
-                        listTag += "<li><a href='#' onclick='javascript:getField("+"\""+tbName+"\""+")'>" + tbName + "</a></li>";
+                        listTag += "<li><a href='#' onclick='javascript:getFields("+"\""+dbName+"\", "+"\""+tbName+"\""+")'>" + tbName + "</a></li>";
                     }
                     document.getElementById("tbList").innerHTML = listTag;
-                    name = dbName + " / ";
-                    database = dbName;
                 },
                 error:function(error) {
                     alert("오류");
                 }
             });
         }
-        function getField(tbName) {
-            var url = document.getElementById("hiddenUrl").value;
-            var username = document.getElementById("hiddenUserName").value;
-            var password = document.getElementById("hiddenPassword").value;
-            var data = { "url":url, "username":username, "password":password };
-            table = tbName;
-            document.getElementById("name").innerHTML = name + tbName;
+        function getFields(dbName, tbName) {
+            var data = getConnectInfomation();
+            document.getElementById("name").innerHTML = dbName + " / " + tbName;
             $.ajax({
-                url:"<%=cp%>/field?db="+database+"&tb="+table,
+                url:"<%=cp%>/fields?db="+dbName+"&tb="+tbName,
                 method:"POST",
                 type:"json",
                 contentType:"application/json",
                 data:JSON.stringify(data),
                 success:function(data) {
-                    var text = getClassText(data);
-                    document.getElementById("textArea").innerHTML = text;
+                    var count = data.length;
+                    var tableHtml = "";
+                    for(var i = 0; i < count; i++) {
+                        var id = "chk"+i;
+                        tableHtml += "<tr onclick='checked("+id+")' onmouseover='this.bgColor=\"#EEEEEE\"' onmouseout='this.bgColor=\"#FFFFFF\"' >" +
+                                        "<td><input type='checkbox' class='checkbox' id='"+id+"' checked='checked' /></td>" +
+                                        "<td>"+data[i].db+"</td>" +
+                                        "<td>"+data[i].tb+"</td>" +
+                                        "<td>"+data[i].col+"</td>" +
+                                        "<td>"+data[i].type+"</td>" +
+                                     "</tr>";
+
+                    }
+                    document.getElementById("table").innerHTML += tableHtml;
+                    getClassText();
                 }
             });
         }
-        function getClassText(str) {
-            var resultStr = "";
-            var count = str.length;
-            if(count > 0) {
-                resultStr += "public class " + classToUpperCase(str[0].tb) + " { \n";
-                for(var i = 0; i < count; i++) {
-                    resultStr += "      private" + getVariable(str[i].type) + fieldToUpperCase(str[i].col) + ";\n"
+        function getClassText() {
+            var data = [{"database" : "test", "table" : "test", "column" : "Test_id2",  "type" : "STring"},
+                        {"database" : "test", "table" : "test", "column" : "test__id",  "type" : "STring"},
+                        {"database" : "test", "table" : "test", "column" : "test-id",  "type" : "STring"}];
+            $.ajax({
+                url:"<%=cp%>/text",
+                method:"POST",
+                type:"json",
+                contentType:"application/json",
+                data:JSON.stringify(data),
+                success:function(data) {
+                    alert(data.text);
+                    document.getElementById("textArea").innerHTML += data.text;
                 }
-                resultStr += "}";
-            } else {
-                resultStr = "";
-            }
-            return resultStr;
+            });
         }
-        function getVariable(str) {
-            var resultStr = "";
-            if("bigint" == str)
-                resultStr = " long ";
-            else if("varchar" == str)
-                resultStr = " String ";
-            else if("timestamp" == str)
-                resultStr = " Date ";
-            else if("int" == str)
-                resultStr = " int ";
-            return resultStr;
-        }
-        function removeUnderBar(str) {
-            var returnStr = "";
-            returnStr = str.replace("_", "").replace("-","");
-            return returnStr;
-        }
-        function fieldToUpperCase(str) {
-            var count = str.length;
-            var resultStr = "";
-            var upperNum = -1;
 
-            for(var i = 0; i < count; i++) {
-                if(i == 0) {
-                    resultStr += str.charAt(i).toLowerCase();
-                    continue;
-                }
-                if((str.charAt(i) == "_") || (str.charAt(i) == "-")) {
-                    resultStr += str.charAt(i+1).toUpperCase();
-                    upperNum = i+1;
-                } else {
-                    if(i == upperNum)
-                        continue;
-                    else
-                        resultStr += str.charAt(i);
-                }
-            }
-            return resultStr;
-        }
-        function classToUpperCase(str) {
-            var count = str.length;
-            var resultStr = "";
-            var upperNum = -1;
+        function allChecked() {
 
-            for (var i = 0; i < count; i++) {
-                if (i == 0) {
-                    resultStr += str.charAt(i).toUpperCase();
-                    continue;
-                }
-                if ((str.charAt(i) == "_") || (str.charAt(i) == "-")) {
-                    resultStr += str.charAt(i + 1).toUpperCase();
-                    upperNum = i + 1;
-                } else {
-                    if((i == upperNum))
-                        continue;
-                    else
-                    resultStr += str.charAt(i);
-                }
-            }
-            return resultStr;
+        }
+
+        function checked(id) {
+            document.getElementById(id).checked = checked;
         }
     </script>
 
@@ -189,16 +142,17 @@
 
     <div style="height: auto; margin: 20px;">
         <div class="panel panel-primary">
-            <div class="panel-heading">Database 정보 입력</div>
+            <div class="panel-heading">Database Information</div>
             <div class="panel-body">
+                <%--연결 정보--%>
                 <nav class="navbar navbar-default" role="navigation">
                     <form class="navbar-form navbar-left" role="search">
                         <div class="form-group">
-                            <input type="text" class="form-control" placeholder="URL" id="url" name="url" value="jdbc:mysql://popcorn5.c9nazwdesykr.ap-northeast-1.rds.amazonaws.com:3306" />
-                            <input type="text" class="form-control" placeholder="UserName" id="username" name="username" value="popcorn5" />
-                            <input type="password" class="form-control" placeholder="Password" id="password" name="password" value="Spicysh7672p!" />
+                            <input type="text" class="form-control" placeholder="URL" id="url" name="url" value="jdbc:mysql://localhost:3306" />
+                            <input type="text" class="form-control" placeholder="UserName" id="username" name="username" value="root" />
+                            <input type="password" class="form-control" placeholder="Password" id="password" name="password" value="1234" />
                         </div>
-                        <button type="button" class="btn btn-default" onclick="dbConnection();">Connect</button>
+                        <button type="button" class="btn btn-default" onclick="getDatabases();">Connect</button>
                     </form>
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
@@ -223,14 +177,48 @@
         </div>
     </div>
 
-    <div style="height: auto; margin: 20px;">
+    <div style="max-height: 500px; margin: 20px;">
         <div class="panel panel-primary">
             <div class="panel-heading" id="name"></div>
             <div class="panel-body">
-                <textarea class="form-control" rows="50" cols="50" id="textArea">
-                </textarea>
+                <div style="overflow: auto; max-height: 450px; width: auto;">
+                    <table class="table" id="table">
+                        <tr>
+                            <th><input type="checkbox" class="checkbox" onclick="allChecked();"/></th>
+                            <th>DB Name</th>
+                            <th>Table Name</th>
+                            <th>Colunmn Name</th>
+                            <th>Type Name</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#modal" >
+                    <span class="glyphicon glyphicon-ok"></span>
+                    Create
+                </button>
+                <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="label">Modal title</h4>
+                            </div>
+                            <div class="modal-body">
+                                <textarea style="width: 500px; height: 550px;" id="textArea"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary">SAVE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+
 </body>
 </html>
