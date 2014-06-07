@@ -96,24 +96,44 @@
                     var tableHtml = "";
                     for(var i = 0; i < count; i++) {
                         var id = "chk"+i;
-                        tableHtml += "<tr onclick='checked("+id+")' onmouseover='this.bgColor=\"#EEEEEE\"' onmouseout='this.bgColor=\"#FFFFFF\"' >" +
-                                        "<td><input type='checkbox' class='checkbox' id='"+id+"' checked='checked' /></td>" +
-                                        "<td>"+data[i].db+"</td>" +
-                                        "<td>"+data[i].tb+"</td>" +
-                                        "<td>"+data[i].col+"</td>" +
-                                        "<td>"+data[i].type+"</td>" +
+                        tableHtml += "<tr onmouseover='this.bgColor=\"#EEEEEE\"' onmouseout='this.bgColor=\"#FFFFFF\"' style='cursor: pointer;' >" +
+                                        "<td onclick='isCheckedAll()'>"+
+                                            "<input type='checkbox' checked='checked' name='checkbox' class='checkbox' id='"+id+"' />"+
+                                        "</td>" +
+                                        "<td onclick='checked("+id+")' name='database'>"+data[i].db+"</td>" +
+                                        "<td onclick='checked("+id+")' name='table'>"+data[i].tb+"</td>" +
+                                        "<td onclick='checked("+id+")' name='column'>"+data[i].col+"</td>" +
+                                        "<td onclick='checked("+id+")' name='type'>"+data[i].type+"</td>" +
                                      "</tr>";
 
                     }
                     document.getElementById("table").innerHTML += tableHtml;
-                    getClassText();
+//                    getClassText();
                 }
             });
         }
-        function getClassText() {
-            var data = [{"database" : "test", "table" : "test", "column" : "Test_id2",  "type" : "STring"},
-                        {"database" : "test", "table" : "test", "column" : "test__id",  "type" : "STring"},
-                        {"database" : "test", "table" : "test", "column" : "test-id",  "type" : "STring"}];
+
+        function create() {
+            var checkbox = document.getElementsByName("checkbox");
+            var db = document.getElementsByName("database");
+            var tb = document.getElementsByName("table");
+            var col = document.getElementsByName("column");
+            var type = document.getElementsByName("type");
+
+            var count = checkbox.length;
+            var data = new Array();
+
+            for(var i = 0; i < count; i++) {
+                if(checkbox[i].checked) {
+                    sub = new Object();
+                    sub['database'] = db[i].innerHTML;
+                    sub['table'] = tb[i].innerHTML;
+                    sub['column'] = col[i].innerHTML;
+                    sub['type'] = type[i].innerHTML;
+                    data[i] = sub;
+                }
+            }
+
             $.ajax({
                 url:"<%=cp%>/text",
                 method:"POST",
@@ -121,18 +141,45 @@
                 contentType:"application/json",
                 data:JSON.stringify(data),
                 success:function(data) {
-                    alert(data.text);
                     document.getElementById("textArea").innerHTML += data.text;
                 }
             });
         }
 
-        function allChecked() {
-
+        function checkedAll() {
+            var all = document.getElementById("chkAll");
+            var doc = document.getElementsByName("checkbox");
+            var count = doc.length;
+            if(all.checked) {
+                for(var i = 0; i < count; i++) {
+                    doc[i].checked = true;
+                }
+            } else {
+                for(var i = 0; i < len; i++) {
+                    doc[i].checked = false;
+                }
+            }
         }
 
-        function checked(id) {
-            document.getElementById(id).checked = checked;
+        function checked(chk) {
+            if(chk.checked) {
+                chk.checked = false;
+            } else {
+                chk.checked = true;
+            }
+            isCheckedAll();
+        }
+
+        function isCheckedAll() {
+            var doc = document.getElementsByName("checkbox");
+            for(var i = 0; i < doc.length; i++) {
+                if(!doc[i].checked) {
+                    document.getElementById("chkAll").checked = false;
+                    break;
+                } else {
+                    document.getElementById("chkAll").checked = true;
+                }
+            }
         }
     </script>
 
@@ -180,21 +227,19 @@
     <div style="max-height: 500px; margin: 20px;">
         <div class="panel panel-primary">
             <div class="panel-heading" id="name"></div>
-            <div class="panel-body">
-                <div style="overflow: auto; max-height: 450px; width: auto;">
-                    <table class="table" id="table">
-                        <tr>
-                            <th><input type="checkbox" class="checkbox" onclick="allChecked();"/></th>
-                            <th>DB Name</th>
-                            <th>Table Name</th>
-                            <th>Colunmn Name</th>
-                            <th>Type Name</th>
-                        </tr>
-                    </table>
-                </div>
+            <div style="overflow: auto; max-height: 450px; width: auto;">
+                <table class="table" id="table">
+                    <tr>
+                        <th><input type="checkbox" id="chkAll" class="checkbox" checked="checked" onclick="checkedAll();"/></th>
+                        <th>DB Name</th>
+                        <th>Table Name</th>
+                        <th>Colunmn Name</th>
+                        <th>Type Name</th>
+                    </tr>
+                </table>
             </div>
             <div class="panel-footer">
-                <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#modal" >
+                <button onclick="create()" type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#modal" >
                     <span class="glyphicon glyphicon-ok"></span>
                     Create
                 </button>
@@ -210,7 +255,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary">SAVE</button>
+                                <button type="button" class="btn btn-primary" onclick="save">SAVE</button>
                             </div>
                         </div>
                     </div>

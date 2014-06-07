@@ -51,6 +51,8 @@ public class FieldTextConvert {
             result = "Date ";
         else if("INT".equalsIgnoreCase(str))
             result = "int ";
+        else if("LONGTEXT".equalsIgnoreCase(str))
+            result = "String ";
         else
             result = str+" ";
         return result;
