@@ -1,3 +1,6 @@
 1. DB선택
-    - 디비 종류 선택(orcle, mssql, mysql)
-    - url, id, pw, db명을 이용하여 디비 연결 테스트
+    - 디비 종류 선택(orcle, mssql)
+2. 로그인
+    - 환경 설정 : DB정보 저장, 컬럼별 변수명 저장
+    - java파일 저장
+3. java파일 다운로드

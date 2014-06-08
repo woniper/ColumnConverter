@@ -22,6 +22,7 @@
                             "password":document.getElementById("password").value
                           }
         }
+        // DB연결 후 Database List
         function getDatabases() {
             var data = getConnectInfomation();
 
@@ -55,6 +56,7 @@
                    }
             });
 	    }
+        // 선택한 DB의 Table List
         function getTables(dbName) {
             var data = getConnectInfomation();
 
@@ -82,6 +84,7 @@
                 }
             });
         }
+        // 선택한 Table의 Field List
         function getFields(dbName, tbName) {
             var data = getConnectInfomation();
             document.getElementById("name").innerHTML = dbName + " / " + tbName;
@@ -93,7 +96,13 @@
                 data:JSON.stringify(data),
                 success:function(data) {
                     var count = data.length;
-                    var tableHtml = "";
+                    var tableHtml =  "<tr>" +
+                                        "<th><input type='checkbox' id='chkAll' class='checkbox' checked='checked' onclick='checkedAll();'/></th>"+
+                                        "<th>DB Name</th>"+
+                                        "<th>Table Name</th>"+
+                                        "<th>Colunmn Name</th>"+
+                                        "<th>Type Name</th>"+
+                                      "</tr>";
                     for(var i = 0; i < count; i++) {
                         var id = "chk"+i;
                         tableHtml += "<tr onmouseover='this.bgColor=\"#EEEEEE\"' onmouseout='this.bgColor=\"#FFFFFF\"' style='cursor: pointer;' >" +
@@ -107,12 +116,11 @@
                                      "</tr>";
 
                     }
-                    document.getElementById("table").innerHTML += tableHtml;
-//                    getClassText();
+                    document.getElementById("table").innerHTML = tableHtml;
                 }
             });
         }
-
+        // Field -> 변수명으로 생성
         function create() {
             var checkbox = document.getElementsByName("checkbox");
             var db = document.getElementsByName("database");
@@ -130,8 +138,12 @@
                     sub['table'] = tb[i].innerHTML;
                     sub['column'] = col[i].innerHTML;
                     sub['type'] = type[i].innerHTML;
-                    data[i] = sub;
+                    data[data.length] = sub;
                 }
+            }
+            if(data.length == 0) {
+                document.getElementById("textArea").innerHTML = "";
+                return;
             }
 
             $.ajax({
@@ -141,11 +153,11 @@
                 contentType:"application/json",
                 data:JSON.stringify(data),
                 success:function(data) {
-                    document.getElementById("textArea").innerHTML += data.text;
+                    document.getElementById("textArea").innerHTML = data.text;
                 }
             });
         }
-
+        // checkbox 전체 선택
         function checkedAll() {
             var all = document.getElementById("chkAll");
             var doc = document.getElementsByName("checkbox");
@@ -155,12 +167,12 @@
                     doc[i].checked = true;
                 }
             } else {
-                for(var i = 0; i < len; i++) {
+                for(var i = 0; i < count; i++) {
                     doc[i].checked = false;
                 }
             }
         }
-
+        // checkbox checked
         function checked(chk) {
             if(chk.checked) {
                 chk.checked = false;
@@ -169,7 +181,7 @@
             }
             isCheckedAll();
         }
-
+        // checkbox 전체 체크 여부
         function isCheckedAll() {
             var doc = document.getElementsByName("checkbox");
             for(var i = 0; i < doc.length; i++) {
@@ -187,6 +199,7 @@
     <input type="hidden" id="hiddenUserName" />
     <input type="hidden" id="hiddenPassword" />
 
+    <%--DB 정보 입력--%>
     <div style="height: auto; margin: 20px;">
         <div class="panel panel-primary">
             <div class="panel-heading">Database Information</div>
@@ -202,6 +215,7 @@
                         <button type="button" class="btn btn-default" onclick="getDatabases();">Connect</button>
                     </form>
                     <ul class="nav navbar-nav">
+                        <%--DB dropdown--%>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <span class="badge" id="dbCount"></span>
@@ -210,6 +224,7 @@
                             </a>
                             <ul class="dropdown-menu" id="dbList"></ul>
                         </li>
+                        <%--Table dropdown--%>
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                                 <span class="badge" id="tbCount"></span>
@@ -229,13 +244,7 @@
             <div class="panel-heading" id="name"></div>
             <div style="overflow: auto; max-height: 450px; width: auto;">
                 <table class="table" id="table">
-                    <tr>
-                        <th><input type="checkbox" id="chkAll" class="checkbox" checked="checked" onclick="checkedAll();"/></th>
-                        <th>DB Name</th>
-                        <th>Table Name</th>
-                        <th>Colunmn Name</th>
-                        <th>Type Name</th>
-                    </tr>
+
                 </table>
             </div>
             <div class="panel-footer">

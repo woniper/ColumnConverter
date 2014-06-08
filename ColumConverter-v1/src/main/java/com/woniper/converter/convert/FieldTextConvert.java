@@ -31,7 +31,7 @@ public class FieldTextConvert {
                 if(i == upperNum)
                     continue;
                 else
-                    result.append(subStr);
+                    result.append(subStr.toLowerCase());
             }
         }
         return result.toString();
